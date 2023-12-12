@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<!-- saved from url=(0071)https://www.w3schools.com/graphics/tryit.asp?filename=trygame_obstacles -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        canvas {
+            border: 1px solid #d3d3d3;
+            background: url('https://media.istockphoto.com/id/1419410282/ko/%EC%82%AC%EC%A7%84/%EC%95%84%EB%A6%84-%EB%8B%A4%EC%9A%B4-%EB%B0%9D%EC%9D%80-%ED%83%9C%EC%96%91-%EA%B4%91%EC%84%A0%EC%9C%BC%EB%A1%9C-%EB%B4%84%EC%97%90%EC%84%9C-%EC%82%AC%EC%9D%BC%EB%9F%B0%ED%8A%B8-%EC%88%B2.jpg?s=1024x1024&w=is&k=20&c=lCk-jQ1gwuwMW2t36QRuNipt7ectlltg1POgWrXKvrw=') no-repeat center center fixed;
+            background-size: cover;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        #restartBtn {
+            display: none;
+        }
+    </style>
+</head>
+<body onload="startGame()" contenteditable="false"><canvas width="480" height="270"></canvas>
+    <script>
+        var myGamePiece;
+        var myObstacles = [];
+        var myScore;
+        var myMusic;
+        var restartBtn;
+
+        function startGame() {
+            myGamePiece = new component(30, 30, "red", 10, 120);
+            myGamePiece.gravity = 0.05;
+            myScore = new component("20px", "Consolas", "white", 280, 40, "text", "SCORE: 0");
+            myGameArea.start();
+
+            // 음악을 불러오고 재생
+            myMusic = new sound('https://www.chosic.com/wp-content/uploads/2021/02/6-Happy-Commercial-Piano(chosic.com).mp3');
+            myMusic.play();
+
+            // 재시작 버튼 생성
+            restartBtn = document.createElement("button");
+            restartBtn.innerHTML = "Restart";
+            restartBtn.id = "restartBtn";
+            restartBtn.onclick = function() {
+                restartGame();
+            };
+            document.body.appendChild(restartBtn);
+        }
+
+        function restartGame() {
+            // 재시작 버튼 숨기기
+            restartBtn.style.display = "none";
+
+            // 게임 오브젝트 초기화
+            myGamePiece = new component(30, 30, "red", 10, 120);
+            myGamePiece.gravity = 0.05;
+            myObstacles = [];
+            myScore.text = "SCORE: 0";
+            myGameArea.frameNo = 0;
+
+            // 게임 재시작
+            myGameArea.start();
+            myMusic.play();
+        }
+
+        function sound(src) {
+            this.sound = document.createElement('audio');
+            this.sound.src = src;
+            this.sound.setAttribute('preload', 'auto');
+            this.sound.setAttribute('controls', 'none');
+            this.sound.style.display = 'none';
+            document.body.appendChild(this.sound);
+            this.play = function() {
+                this.sound.play();
+            }
+            this.stop = function() {
+                this.sound.pause();
+            }
+        }
+
+        var myGameArea = {
+            canvas : document.createElement("canvas"),
+            start : function() {
+                this.canvas.width = 480;
+                this.canvas.height = 270;
+                this.context = this.canvas.getContext("2d");
+                document.body.insertBefore(this.canvas, document.body.childNodes[0]);
+                this.frameNo = 0;
+                this.interval = setInterval(updateGameArea, 20);
+            },
+            clear : function() {
+                this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            }
+        }
+
+        function component(width, height, color, x, y, type, text) {
+            this.type = type;
+            this.score = 0;
+            this.width = width;
+            this.height = height;
+            this.speedX = 0;
+            this.speedY = 0;    
+            this.x = x;
+            this.y = y;
+            this.gravity = 0;
+            this.gravitySpeed = 0;
+            this.text = text;
+            this.update = function() {
+                ctx = myGameArea.context;
+                if (this.type == "text") {
+                    ctx.font = this.width + " " + this.height;
+                    ctx.fillStyle = color;
+                    ctx.fillText(this.text, this.x, this.y);
+                } else {
+                    ctx.fillStyle = color;
+                    ctx.fillRect(this.x, this.y, this.width, this.height);
+                }
+            }
+            this.newPos = function() {
+                this.gravitySpeed += this.gravity;
+                this.x += this.speedX;
+                this.y += this.speedY + this.gravitySpeed;
+                this.hitBottom();
+            }
+            this.hitBottom = function() {
+                var rockbottom = myGameArea.canvas.height - this.height;
+                if (this.y > rockbottom) {
+                    this.y = rockbottom;
+                    this.gravitySpeed = 0;
+                }
+            }
+            this.crashWith = function(otherobj) {
+                var myleft = this.x;
+                var myright = this.x + (this.width);
+                var mytop = this.y;
+                var mybottom = this.y + (this.height);
+                var otherleft = otherobj.x;
+                var otherright = otherobj.x + (otherobj.width);
+                var othertop = otherobj.y;
+                var otherbottom = otherobj.y + (otherobj.height);
+                var crash = true;
+                if ((mybottom < othertop) || (mytop > otherbottom) || (myright < otherleft) || (myleft > otherright)) {
+                    crash = false;
+                }
+                return crash;
+            }
+        }
+
+        function updateGameArea() {
+            var x, height, gap, minHeight, maxHeight, minGap, maxGap;
+            for (i = 0; i < myObstacles.length; i += 1) {
+                if (myGamePiece.crashWith(myObstacles[i])) {
+                    myMusic.stop();
+                    endGame();
+                    return;
+                } 
+            }
+            myGameArea.clear();
+            myGameArea.frameNo += 1;
+            if (myGameArea.frameNo == 1 || everyinterval(150)) {
+                x = myGameArea.canvas.width;
+                minHeight = 20;
+                maxHeight = 200;
+                height = Math.floor(Math.random()*(maxHeight-minHeight+1)+minHeight);
+                minGap = 50;
+                maxGap = 200;
+                gap = Math.floor(Math.random()*(maxGap-minGap+1)+minGap);
+                myObstacles.push(new component(10, height, "purple", x, 0));
+                myObstacles.push(new component(10, x - height - gap, "blue", x, height + gap));
+            }
+            for (i = 0; i < myObstacles.length; i += 1) {
+                myObstacles[i].x += -1;
+                myObstacles[i].y += Math.sin(myGameArea.frameNo / 10) * 1.5;
+                myObstacles[i].update();
+            }
+            myScore.text = "SCORE: " + myGameArea.frameNo;
+            myScore.update();
+            myGamePiece.newPos();
+            myGamePiece.update();
+        }
+
+        function everyinterval(n) {
+            if ((myGameArea.frameNo / n) % 1 == 0) {return true;}
+            return false;
+        }
+
+        function endGame() {
+            // 게임 종료 시 재시작 버튼 표시
+            restartBtn.style.display = "block";
+        }
+
+        function jump(n) {
+            myGamePiece.gravity = n;
+        }
+    </script>
+    <br>
+    <button onmousedown="jump(-0.2)" onmouseup="jump(0.05)">Jump</button>
+    <p>Use the Jump button to stay in the air</p>
+    <p>How long can you stay alive?</p>
+
+
+<audio src="https://www.chosic.com/wp-content/uploads/2021/02/6-Happy-Commercial-Piano(chosic.com).mp3" preload="auto" controls="none" style="display: none;"></audio><button id="restartBtn" style="display: block;">Restart</button></body></html>
