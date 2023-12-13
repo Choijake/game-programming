@@ -2,5 +2,4 @@
 
 
 #### 구현 화면
-![스크린샷 2023-12-13 125713](https://github.com/Choijake/game-programming/assets/107412414/20e3cf89-ef76-4893-9307-933b446ce462)
-
+![image](https://github.com/Choijake/game-programming/assets/107412414/30876295-cf11-497b-8bb1-d88ba3522d63)
