@@ -18,3 +18,5 @@
 - pdf의 튜토리얼에 따라 학습
 ## [13주차](https://github.com/Choijake/game-programming/tree/main/week13)
 - pdf의 튜토리얼에 따라 학습 및 구현
+## [15주차](https://github.com/Choijake/game-programming/tree/main/week15)
+- 유니티 게임 업그레이드 및 발표
